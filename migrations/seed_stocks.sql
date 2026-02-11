@@ -1,0 +1,37 @@
+-- ============================================================
+-- 股票資料初始化說明
+-- ============================================================
+-- 
+-- 注意：本專案已改用現有的 dim_security 表
+--
+-- dim_security 表由外部服務每日自動更新，包含完整的台股上市櫃公司資料
+-- 因此不需要執行此檔案來匯入股票資料
+--
+-- 表結構：
+--   - security_id: 股票代碼（純數字，如 2330, 0050）
+--   - name_zh: 中文名稱
+--   - market: 市場別（TWSE, TPEx）
+--   - industry: 產業別
+--   - isin: ISIN 代碼
+--   - listing_date: 上市日期
+--   - status: 狀態
+--   - day_trading_flag: 當沖標記
+--   - odd_lot_enabled: 盤中零股交易
+--   - updated_at: 更新時間
+--
+-- ============================================================
+-- ETF 基準說明
+-- ============================================================
+--
+-- 績效比較功能預設使用以下三檔 ETF 作為大盤基準：
+--   - 0050: 元大台灣50
+--   - 0056: 元大高股息
+--   - 00878: 國泰永續高股息
+--
+-- 這些代碼已寫死在 services/stock_service.py 的 BENCHMARK_ETFS 中
+--
+-- ============================================================
+
+-- 確保 dim_security 表的索引已建立
+CREATE INDEX IF NOT EXISTS idx_dim_security_name ON dim_security(name_zh);
+CREATE INDEX IF NOT EXISTS idx_dim_security_id ON dim_security(security_id);
