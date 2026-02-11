@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose port (Zeabur uses 8080)
-EXPOSE ${PORT:-8080}
+EXPOSE 8080  
 
 # Run the application with PORT from environment
 CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
