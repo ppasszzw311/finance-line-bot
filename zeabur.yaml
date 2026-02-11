@@ -5,7 +5,6 @@ services:
   - name: app
     environment:
       - PYTHON_VERSION=3.11
-      # PORT will be automatically set by Zeabur
-      # Do not override it here!
+      - PORT=8080
 
 # Database service will be added via Zeabur dashboard

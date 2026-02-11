@@ -42,7 +42,7 @@ if not LINE_CHANNEL_ACCESS_TOKEN or not LINE_CHANNEL_SECRET:
 async def startup_event():
     """應用程式啟動時執行"""
     logger.info("Starting LINE Bot Finance Tracker...")
-    logger.info(f"PORT: {os.getenv('PORT', '8000')}")
+    logger.info(f"PORT: {os.getenv('PORT', '8080')}")
     # 初始化資料庫（如果需要）
     # init_db()  # 注意：在 Zeabur 上應該已經執行過 schema.sql
 
@@ -137,7 +137,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))
+    port = int(os.getenv("PORT", 8080))
     logger.info(f"Starting server on port {port}...")
     uvicorn.run(
         "main:app",
