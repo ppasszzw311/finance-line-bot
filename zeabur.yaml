@@ -5,6 +5,6 @@ services:
   - name: app
     environment:
       - PYTHON_VERSION=3.11
-      - PORT=8000
+      
 
 # Database service will be added via Zeabur dashboard

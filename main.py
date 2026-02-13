@@ -11,7 +11,24 @@ from linebot.models import MessageEvent, TextMessage, FollowEvent
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from models.database import get_db, init_db
-from services.line_handler import LineHandler, handler as webhook_handler
+from services.line_handler import LineHandler, get_webhook_handler
+
+
+_line_callbacks_registered = False
+
+
+def _register_line_callbacks(webhook_handler: WebhookHandler):
+    """Register LINE SDK callbacks once.
+
+    We do this lazily so missing env vars don't crash app import/startup.
+    """
+    global _line_callbacks_registered
+    if _line_callbacks_registered:
+        return
+
+    webhook_handler.add(MessageEvent, message=TextMessage)(handle_text_message)
+    webhook_handler.add(FollowEvent)(handle_follow)
+    _line_callbacks_registered = True
 
 # 載入環境變數
 load_dotenv()
@@ -78,8 +95,13 @@ async def webhook(request: Request, db: Session = Depends(get_db)):
     logger.info(f"Webhook received. Signature: {signature[:10]}...")
     
     try:
+        webhook_handler = get_webhook_handler()
+        _register_line_callbacks(webhook_handler)
         # 驗證簽章並處理事件
         webhook_handler.handle(body_text, signature)
+    except RuntimeError as e:
+        logger.error(f"LINE configuration error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     except InvalidSignatureError:
         logger.error("Invalid signature. Check your channel secret.")
         raise HTTPException(status_code=400, detail="Invalid signature")
@@ -90,8 +112,6 @@ async def webhook(request: Request, db: Session = Depends(get_db)):
     return JSONResponse(content={"status": "ok"})
 
 
-# 註冊 LINE 事件處理器
-@webhook_handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
     """處理文字訊息事件"""
     # 建立資料庫 session
@@ -107,8 +127,6 @@ def handle_text_message(event):
     finally:
         db.close()
 
-
-@webhook_handler.add(FollowEvent)
 def handle_follow(event):
     """處理用戶加入好友事件"""
     from models.database import get_session_maker
